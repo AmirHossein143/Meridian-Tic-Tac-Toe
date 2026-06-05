@@ -1,0 +1,11 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Meridian mark">
+  <g stroke="#B6A079" stroke-width="4" stroke-linecap="round">
+    <line x1="50" y1="20" x2="50" y2="100"></line><line x1="70" y1="20" x2="70" y2="100"></line>
+    <line x1="20" y1="50" x2="100" y2="50"></line><line x1="20" y1="70" x2="100" y2="70"></line>
+  </g>
+  <g stroke="#4F8E7C" stroke-width="7" stroke-linecap="round" fill="none">
+    <line x1="27" y1="27" x2="43" y2="43"></line><line x1="43" y1="27" x2="27" y2="43"></line>
+  </g>
+  <circle cx="85" cy="85" r="9" fill="none" stroke="#CC7A52" stroke-width="7"></circle>
+</svg>
