@@ -38,7 +38,6 @@ Unlike classic tic-tac-toe, Meridian is a **modern, skill-based game**:
 ```
 meridian/
 ├── PROTOTYPE.py              # Original Python reference (rules validation only)
-├── CLAUDE.md                 # Authoritative project guide
 ├── README.md                 # This file
 │
 ├── reference/                # Design reference (not built code)
@@ -222,16 +221,6 @@ godot --headless --script=addons/gut/gut_cmdline.gd
 - **GUT / GdUnit4** — unit testing
 - **Google Fonts** — Sora, Hanken Grotesk, JetBrains Mono
 - **Figma / Design Tokens** — design system reference
-
----
-
-## 📖 Project Guide
-
-See **[CLAUDE.md](./CLAUDE.md)** for the authoritative project guide:
-- Detailed rules & scoring definitions
-- Hard constraints (no main-thread blocking, pure logic separation)
-- Design system specifications
-- Suggested conventions & folder layout
 
 ---
 
