@@ -9,8 +9,14 @@ config_version=5
 config/name="Meridian"
 config/description="N x N line-scoring tic-tac-toe."
 config/version="0.1.0"
+run/main_scene="res://scenes/App.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://assets/branding/icon-final-flat.svg"
+
+[autoload]
+
+Settings="*res://scripts/ui/settings_store.gd"
+ThemeManager="*res://scripts/ui/theme_manager.gd"
 
 [editor_plugins]
 
