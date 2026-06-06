@@ -1,0 +1,25 @@
+; Engine configuration file.
+; Meridian — Godot 4.6 (GDScript). Phase 0 scaffold.
+; Autoloads, main scene, theme and window tuning are added in later phases.
+
+config_version=5
+
+[application]
+
+config/name="Meridian"
+config/description="N x N line-scoring tic-tac-toe."
+config/version="0.1.0"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://assets/branding/icon-final-flat.svg"
+
+[display]
+
+window/size/viewport_width=1152
+window/size/viewport_height=648
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

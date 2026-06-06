@@ -274,7 +274,7 @@ For major changes, please open an issue first to discuss.
 
 ## 👤 Author
 
-**Your Name** — [GitHub](https://github.com/yourusername) | [Email](mailto:you@example.com)
+**AmirHossein** — [GitHub](https://github.com/AmirHossein143) | [Email](a.h.poodi@gmail.com)
 
 ---
 
