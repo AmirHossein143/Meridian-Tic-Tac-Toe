@@ -2,6 +2,9 @@
 .godot/
 /build/
 export_presets.cfg.local
+*.gd.uid
+*.olean
+user://
 
 # GdUnit4 test reports
 /reports/
@@ -11,3 +14,7 @@ Thumbs.db
 .DS_Store
 *.tmp
 CLAUDE.md
+
+# IDE
+.vs/
+.vscode/

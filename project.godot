@@ -12,6 +12,10 @@ config/version="0.1.0"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://assets/branding/icon-final-flat.svg"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
+
 [display]
 
 window/size/viewport_width=1152
