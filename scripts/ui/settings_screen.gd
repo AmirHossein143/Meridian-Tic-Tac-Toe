@@ -18,7 +18,7 @@ func _ready() -> void:
 
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 10)
-	var back := UIKit.button("< Back", "ghost")
+	var back := UIKit.button("< Back", "ghost", false, "back")
 	back.pressed.connect(func() -> void: MeridianApp.instance.goto("menu"))
 	header.add_child(back)
 	var title := UIKit.label("Settings", "display", 24, "ink")

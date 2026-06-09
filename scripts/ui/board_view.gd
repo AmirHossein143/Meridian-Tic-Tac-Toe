@@ -17,6 +17,9 @@ var runs: Array = [] ## Array of { "cells": Array[Vector2i], "owner": int } for 
 var interactive := true
 
 var _pulse_t := 0.0
+var _pop_cell := Vector2i(-1, -1)
+var _pop_t := 0.0
+const _POP_DUR := 0.16
 
 
 func _ready() -> void:
@@ -27,18 +30,29 @@ func _ready() -> void:
 
 func set_board(b: Board) -> void:
 	board = b
+	_pop_cell = Vector2i(-1, -1)
+	_update_anim()
 	queue_redraw()
 
 
-func set_last_move(cell: Vector2i) -> void:
+## `pop` triggers the placement animation; pass false for undo / restore (re-highlight only).
+func set_last_move(cell: Vector2i, pop := true) -> void:
 	last_move = cell
+	if pop and cell.x >= 0:
+		_pop_cell = cell
+		_pop_t = 0.0
+		_update_anim()
 	queue_redraw()
 
 
 func set_thinking_cell(cell: Vector2i) -> void:
 	thinking_cell = cell
-	set_process(cell.x >= 0)
+	_update_anim()
 	queue_redraw()
+
+
+func _update_anim() -> void:
+	set_process(thinking_cell.x >= 0 or _pop_cell.x >= 0)
 
 
 func set_runs(r: Array) -> void:
@@ -50,13 +64,20 @@ func clear_overlays() -> void:
 	last_move = Vector2i(-1, -1)
 	thinking_cell = Vector2i(-1, -1)
 	runs = []
+	_pop_cell = Vector2i(-1, -1)
 	set_process(false)
 	queue_redraw()
 
 
 func _process(delta: float) -> void:
 	_pulse_t += delta
+	if _pop_cell.x >= 0:
+		_pop_t += delta
+		if _pop_t >= _POP_DUR:
+			_pop_cell = Vector2i(-1, -1)
 	queue_redraw()
+	if thinking_cell.x < 0 and _pop_cell.x < 0:
+		set_process(false)
 
 
 # ---- geometry (mirrors board.js) -----------------------------------------------------------
@@ -147,11 +168,18 @@ func _draw() -> void:
 			if v == Marks.EMPTY:
 				continue
 			var ctr := _center(m, Vector2i(r, c))
+			var rg2 := rg
+			var sw2 := sw
+			if _pop_cell.x == r and _pop_cell.y == c:
+				var pt := clampf(_pop_t / _POP_DUR, 0.0, 1.0)
+				var ps := lerpf(0.5, 1.0, 1.0 - pow(1.0 - pt, 3.0)) # ease-out
+				rg2 = rg * ps
+				sw2 = maxf(sw * ps, 1.0)
 			if v == Marks.X:
-				draw_line(ctr + Vector2(-rg, -rg), ctr + Vector2(rg, rg), x_col, sw, true)
-				draw_line(ctr + Vector2(rg, -rg), ctr + Vector2(-rg, rg), x_col, sw, true)
+				draw_line(ctr + Vector2(-rg2, -rg2), ctr + Vector2(rg2, rg2), x_col, sw2, true)
+				draw_line(ctr + Vector2(rg2, -rg2), ctr + Vector2(-rg2, rg2), x_col, sw2, true)
 			else:
-				draw_arc(ctr, rg, 0.0, TAU, 48, o_col, sw, true)
+				draw_arc(ctr, rg2, 0.0, TAU, 48, o_col, sw2, true)
 
 
 # ---- input ---------------------------------------------------------------------------------

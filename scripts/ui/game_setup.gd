@@ -39,7 +39,7 @@ func _ready() -> void:
 	# Header: back + theme toggle + title
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 10)
-	var back := UIKit.button("< Back", "ghost")
+	var back := UIKit.button("< Back", "ghost", false, "back")
 	back.pressed.connect(func() -> void: MeridianApp.instance.goto("menu"))
 	header.add_child(back)
 	var theme_tog := ThemeToggle.new().configure(func(t: String) -> void: ThemeManager.set_theme_mode(t))
@@ -85,7 +85,7 @@ func _ready() -> void:
 	col.add_child(_stepper)
 
 	col.add_child(_gap(6))
-	var start := UIKit.button("Start game", "primary", true)
+	var start := UIKit.button("Start game", "primary", true, "start")
 	start.pressed.connect(_on_start)
 	col.add_child(start)
 	col.add_child(_gap(16))
@@ -126,6 +126,7 @@ func _make_preset(n: int) -> Control:
 	card.gui_input.connect(func(e: InputEvent) -> void:
 		if (e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT) \
 				or (e is InputEventScreenTouch and e.pressed):
+			Audio.play("preset")
 			_select_size(n, true))
 	_preset_cards[n] = card
 	return card

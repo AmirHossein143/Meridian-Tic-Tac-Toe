@@ -74,7 +74,7 @@ func _build() -> void:
 	var theme_tog := ThemeToggle.new().configure(func(t: String) -> void: _set_theme_preserving(t))
 	theme_tog.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	top.add_child(theme_tog)
-	var undo_btn := UIKit.button("Undo", "soft")
+	var undo_btn := UIKit.button("Undo", "soft", false, "undo")
 	undo_btn.pressed.connect(_on_undo)
 	top.add_child(undo_btn)
 	var restart_btn := UIKit.button("Restart", "soft")
@@ -170,7 +170,7 @@ func _adopt(s: GameState) -> void:
 	state.game_over.connect(_on_game_over)
 	ai_thinking = false
 	board_view.set_board(state.board)
-	board_view.set_last_move(state.last_move())
+	board_view.set_last_move(state.last_move(), false)
 	board_view.interactive = not state.over
 	_update_scores()
 	_update_turn_pill()
@@ -185,12 +185,16 @@ func _on_cell_pressed(cell: Vector2i) -> void:
 		return
 	if vs_ai and state.current != Marks.X:
 		return
+	if not state.board.is_empty(cell.x, cell.y):
+		Audio.play("invalid")
+		return
 	state.apply_move(cell.x, cell.y)
 
 
-func _on_move_made(r: int, c: int, _player: int) -> void:
+func _on_move_made(r: int, c: int, player: int) -> void:
 	board_view.set_last_move(Vector2i(r, c))
 	board_view.queue_redraw()
+	Audio.play("place_x" if player == Marks.X else "place_o")
 	# Indicators refresh on turn_changed / game_over (emitted right after move_made), so they
 	# always reflect the post-flip side to move — not the player who just moved.
 	if not state.over:
@@ -254,7 +258,7 @@ func _on_undo() -> void:
 		state.undo_last() # step back past the AI reply so it's the human's turn again
 	board_view.set_board(state.board)
 	board_view.set_runs([])
-	board_view.set_last_move(state.last_move())
+	board_view.set_last_move(state.last_move(), false)
 	board_view.interactive = true
 	_update_scores()
 	_update_turn_pill()
@@ -296,7 +300,7 @@ func _open_pause() -> void:
 	_pause_modal = m
 	m.dismissed.connect(_close_pause)
 	m.body.add_child(UIKit.label("Paused", "display_bold", 26, "ink"))
-	m.body.add_child(_pause_btn("Resume", "primary", _close_pause))
+	m.body.add_child(_pause_btn("Resume", "primary", _close_pause, "back"))
 	m.body.add_child(_pause_btn("Restart", "soft", func() -> void:
 		_close_pause()
 		_on_restart()))
@@ -306,13 +310,12 @@ func _open_pause() -> void:
 	m.body.add_child(_pause_btn("How to Play", "soft", func() -> void:
 		_close_pause()
 		_open_howto_overlay()))
-	m.body.add_child(_pause_btn("Back to Main Menu", "ghost", func() -> void:
-		MeridianApp.instance.goto("menu")))
+	m.body.add_child(_pause_btn("Back to Main Menu", "ghost", _go_main_menu, "back"))
 
 
 
-func _pause_btn(text: String, kind: String, cb: Callable) -> Button:
-	var b := UIKit.button(text, kind)
+func _pause_btn(text: String, kind: String, cb: Callable, sound := "auto") -> Button:
+	var b := UIKit.button(text, kind, false, sound)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.pressed.connect(cb)
 	return b
@@ -324,14 +327,18 @@ func _close_pause() -> void:
 	_pause_modal = null
 
 
+func _go_main_menu() -> void:
+	MeridianApp.instance.goto("menu")
+
+
 func _open_settings_overlay() -> void:
-	var m := Modal.new().configure(true, 420.0)
+	var m := Modal.new().configure(true, 420.0, false) # no entrance anim: avoids flash on theme-toggle restore
 	add_child(m)
 	_overlay = m
 	m.dismissed.connect(_settings_done)
 	m.body.add_child(UIKit.label("Settings", "display_bold", 24, "ink"))
 	m.body.add_child(SettingsPanel.new().configure(_settings_set_theme, _settings_set_accent))
-	var done := UIKit.button("Done", "primary")
+	var done := UIKit.button("Done", "primary", false, "back")
 	done.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	done.pressed.connect(_settings_done)
 	m.body.add_child(done)
@@ -409,7 +416,15 @@ func _on_game_over(result: Dictionary) -> void:
 	board_view.set_runs(bands)
 	_update_scores()
 	_update_turn_pill()
+	Audio.play("sweep")
+	get_tree().create_timer(0.32).timeout.connect(_play_result_sound.bind(int(result["winner"])))
 	_show_game_over(result)
+
+
+func _play_result_sound(winner: int) -> void:
+	if not is_inside_tree(): # the screen may have been torn down within the delay
+		return
+	Audio.play("win" if winner != Marks.EMPTY else "draw")
 
 
 func _show_game_over(result: Dictionary) -> void:
@@ -460,12 +475,14 @@ func _show_game_over(result: Dictionary) -> void:
 	var again := UIKit.button("Play again", "primary")
 	again.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	again.pressed.connect(_on_restart)
-	var menu := UIKit.button("Menu", "ghost")
+	var menu := UIKit.button("Menu", "ghost", false, "back")
 	menu.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	menu.pressed.connect(func() -> void: MeridianApp.instance.goto("menu"))
 	row.add_child(again)
 	row.add_child(menu)
 	v.add_child(row)
+
+	UIKit.pop_in(_over_layer, panel)
 
 
 func _breakdown_col(owner: int, rec: Dictionary, is_winner: bool, name_text: String) -> Control:

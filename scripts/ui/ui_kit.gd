@@ -4,7 +4,9 @@ extends RefCounted
 ## from ThemeManager. Controls are styled once at creation; the App rebuilds the current
 ## screen on a theme change so colours stay in sync.
 
-static func button(text: String, kind := "primary", big := false) -> Button:
+## `sound`: "auto" plays Button_press for primary / Soft_Tap otherwise; pass a specific event
+## ("start","back","undo",…) to override, or "" to silence (e.g. when a parent owns the sound).
+static func button(text: String, kind := "primary", big := false, sound := "auto") -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_NONE
@@ -13,6 +15,11 @@ static func button(text: String, kind := "primary", big := false) -> Button:
 	b.add_theme_font_override("font", ThemeManager.font_ui_semibold)
 	b.add_theme_font_size_override("font_size", 19 if big else 16)
 	_style_button(b, kind, big)
+	var sfx := sound
+	if sfx == "auto":
+		sfx = "button" if kind == "primary" else "tap"
+	if sfx != "":
+		b.pressed.connect(func() -> void: Audio.play(sfx))
 	return b
 
 
@@ -95,6 +102,23 @@ static func clamp_width(desired: float) -> float:
 		if w > 0.0:
 			return minf(desired, w - 48.0)
 	return desired
+
+
+## Subtle entrance for a full-rect overlay: fade the whole layer in, and pop the inner panel
+## (scale 0.96 -> 1.0 from its centre). Async (awaits one frame so the panel has a real size);
+## call without awaiting. Safe if the nodes are freed mid-animation.
+static func pop_in(layer: Control, panel: Control = null) -> void:
+	layer.modulate.a = 0.0
+	layer.create_tween().tween_property(layer, "modulate:a", 1.0, 0.15)
+	if panel == null:
+		return
+	panel.scale = Vector2(0.96, 0.96)
+	await layer.get_tree().process_frame
+	if not is_instance_valid(panel):
+		return
+	panel.pivot_offset = panel.size * 0.5
+	var t := panel.create_tween()
+	t.tween_property(panel, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 static func panel(bg_name := "surface", border_name := "hairline", radius := 20.0, pad := 24) -> PanelContainer:

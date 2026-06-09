@@ -5,6 +5,8 @@ extends PanelContainer
 
 var mark: int
 var _num: Label
+var _shown := 0
+var _tween: Tween
 
 
 func configure(m: int, name_text: String) -> ScoreCard:
@@ -31,7 +33,19 @@ func configure(m: int, name_text: String) -> ScoreCard:
 
 
 func set_value(v: int) -> void:
-	_num.text = str(v)
+	if not is_inside_tree() or v == _shown:
+		_num.text = str(v)
+		_shown = v
+		return
+	if is_instance_valid(_tween):
+		_tween.kill()
+	_tween = create_tween()
+	_tween.tween_method(_set_display, float(_shown), float(v), 0.3)
+	_shown = v
+
+
+func _set_display(f: float) -> void:
+	_num.text = str(int(round(f)))
 
 
 func set_active(a: bool) -> void:

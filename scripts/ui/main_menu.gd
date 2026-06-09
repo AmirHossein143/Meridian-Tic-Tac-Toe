@@ -24,15 +24,19 @@ func _ready() -> void:
 	gap.custom_minimum_size.y = 18
 	v.add_child(gap)
 
-	v.add_child(_menu_button("Play", "primary", true, func() -> void: MeridianApp.instance.goto("setup")))
-	v.add_child(_menu_button("How to Play", "ghost", false, func() -> void: MeridianApp.instance.goto("howto")))
-	v.add_child(_menu_button("Settings", "ghost", false, func() -> void: MeridianApp.instance.goto("settings")))
-	v.add_child(_menu_button("Credits", "ghost", false, func() -> void: MeridianApp.instance.goto("credits")))
+	v.add_child(_menu_button("Play", "primary", true, _go.bind("setup"), "start"))
+	v.add_child(_menu_button("How to Play", "ghost", false, _go.bind("howto")))
+	v.add_child(_menu_button("Settings", "ghost", false, _go.bind("settings")))
+	v.add_child(_menu_button("Credits", "ghost", false, _go.bind("credits")))
 	v.add_child(_menu_button("Quit", "ghost", false, _confirm_quit))
 
 
-func _menu_button(text: String, kind: String, big: bool, cb: Callable) -> Button:
-	var b := UIKit.button(text, kind, big)
+func _go(screen_name: String) -> void:
+	MeridianApp.instance.goto(screen_name)
+
+
+func _menu_button(text: String, kind: String, big: bool, cb: Callable, sound := "auto") -> Button:
+	var b := UIKit.button(text, kind, big, sound)
 	b.custom_minimum_size.x = 260
 	b.pressed.connect(cb)
 	return b
@@ -56,7 +60,7 @@ func _confirm_quit() -> void:
 	var quit := UIKit.button("Quit", "danger")
 	quit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	quit.pressed.connect(func() -> void: get_tree().quit()) # TODO(android): quit() is a no-op/discouraged on Android
-	var stay := UIKit.button("Stay", "ghost")
+	var stay := UIKit.button("Stay", "ghost", false, "back")
 	stay.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stay.pressed.connect(m.close)
 	row.add_child(quit)

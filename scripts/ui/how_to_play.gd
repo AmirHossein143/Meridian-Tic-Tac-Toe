@@ -29,7 +29,7 @@ func _ready() -> void:
 	for s in ["left", "right", "top", "bottom"]:
 		hm.add_theme_constant_override("margin_" + s, 16)
 	hm.add_child(header)
-	var back := UIKit.button("< Back", "ghost")
+	var back := UIKit.button("< Back", "ghost", false, "back")
 	back.pressed.connect(func() -> void: on_back.call())
 	header.add_child(back)
 	var title := UIKit.label("How to play", "display", 24, "ink")

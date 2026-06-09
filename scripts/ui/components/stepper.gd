@@ -45,6 +45,7 @@ func _step(d: int) -> void:
 		return
 	value = nv
 	_refresh()
+	Audio.play("stepper")
 	value_changed.emit(value)
 
 

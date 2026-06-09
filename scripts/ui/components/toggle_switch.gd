@@ -17,6 +17,7 @@ func configure(initial := false) -> ToggleSwitch:
 	toggled.connect(func(p: bool) -> void:
 		on = p
 		_restyle()
+		Audio.play("toggle")
 		switched.emit(on))
 	_restyle()
 	return self

@@ -8,9 +8,11 @@ signal dismissed
 
 var body: VBoxContainer
 var _dismissable := true
+var _animate := true
+var _panel: Control
 
 
-func configure(dismissable := true, panel_min_x := 420.0) -> Modal:
+func configure(dismissable := true, panel_min_x := 420.0, animate := true) -> Modal:
 	_dismissable = dismissable
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -34,7 +36,16 @@ func configure(dismissable := true, panel_min_x := 420.0) -> Modal:
 	body = VBoxContainer.new()
 	body.add_theme_constant_override("separation", 14)
 	panel.add_child(body)
+	_panel = panel
+	_animate = animate
 	return self
+
+
+func _ready() -> void:
+	# Run the entrance here (not in configure) — the modal is in the tree by now, so the
+	# tween/get_tree() calls in pop_in are valid.
+	if _animate:
+		UIKit.pop_in(self, _panel)
 
 
 func close() -> void:

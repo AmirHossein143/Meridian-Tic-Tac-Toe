@@ -49,7 +49,7 @@ func _ready() -> void:
 	gap.custom_minimum_size.y = 6
 	v.add_child(gap)
 
-	var back := UIKit.button("< Back", "ghost")
+	var back := UIKit.button("< Back", "ghost", false, "back")
 	back.pressed.connect(func() -> void: MeridianApp.instance.goto("menu"))
 	v.add_child(back)
 

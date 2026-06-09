@@ -27,6 +27,7 @@ func _ready() -> void:
 
 
 func goto(screen_name: String, params: Dictionary = {}) -> void:
+	var old_name := _current_name
 	_current_name = screen_name
 	_current_params = params
 	if is_instance_valid(_current):
@@ -37,6 +38,16 @@ func goto(screen_name: String, params: Dictionary = {}) -> void:
 	add_child(s)
 	if s.has_method("init_screen"):
 		s.init_screen(params)
+	# Fade in on genuine navigation only — NOT on the theme rebuild's same-screen re-entry, which
+	# would flash the whole game screen in behind the reopened Settings overlay (protects Fix 4).
+	if screen_name != old_name:
+		s.modulate.a = 0.0
+		create_tween().tween_property(s, "modulate:a", 1.0, 0.12)
+	# Music plays in-game only; play_music() is idempotent so the rebuild doesn't restart it.
+	if screen_name == "game":
+		Audio.play_music()
+	else:
+		Audio.stop_music()
 
 
 func _make(screen_name: String) -> Control:
@@ -58,6 +69,12 @@ func _on_theme_changed() -> void:
 ## the theme mid-game does NOT reset the board. Run with: godot --headless --path . -- --smoke
 func _run_smoke() -> void:
 	await get_tree().process_frame
+	# Audio: every mapped event must resolve to a real clip (a future rename fails the smoke).
+	print("AUDIO_OK %d/%d" % [Audio.resolved_count(), Audio.expected_count()])
+	if not Audio.all_resolved():
+		push_error("audio: not all clips resolved")
+		get_tree().quit(1)
+		return
 	for name in ["settings", "howto", "credits", "setup"]:
 		goto(name)
 		await get_tree().process_frame

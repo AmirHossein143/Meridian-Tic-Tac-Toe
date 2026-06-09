@@ -21,6 +21,7 @@ config/icon="res://assets/branding/icon-final-flat.svg"
 
 Settings="*res://scripts/ui/settings_store.gd"
 ThemeManager="*res://scripts/ui/theme_manager.gd"
+Audio="*res://scripts/ui/audio_manager.gd"
 
 [display]
 

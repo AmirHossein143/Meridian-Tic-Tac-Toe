@@ -51,6 +51,7 @@ func _choose(i: int) -> void:
 		return
 	current = i
 	_restyle()
+	Audio.play("tap")
 	selected.emit(i)
 
 
