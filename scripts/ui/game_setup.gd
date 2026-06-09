@@ -1,7 +1,7 @@
 class_name GameSetup
 extends Control
 ## Choose mode (vs AI / 2-player), difficulty (AI only), and board size (presets + 3..19
-## stepper), then Start.
+## stepper), then Start. Selections persist immediately so a theme-driven rebuild restores them.
 
 const PRESETS := [3, 5, 9, 13, 15, 19]
 
@@ -25,27 +25,30 @@ func _ready() -> void:
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)
 
-	var margin := MarginContainer.new()
-	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	margin.add_theme_constant_override("margin_left", 24)
-	margin.add_theme_constant_override("margin_right", 24)
-	margin.add_theme_constant_override("margin_top", 24)
-	margin.add_theme_constant_override("margin_bottom", 24)
-	scroll.add_child(margin)
+	var center := CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(center)
 
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 18)
-	margin.add_child(col)
+	col.custom_minimum_size.x = UIKit.clamp_width(540.0)
+	center.add_child(col)
 
-	# Header
+	col.add_child(_gap(20))
+
+	# Header: back + theme toggle + title
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 10)
 	var back := UIKit.button("< Back", "ghost")
 	back.pressed.connect(func() -> void: MeridianApp.instance.goto("menu"))
 	header.add_child(back)
+	var theme_tog := ThemeToggle.new().configure(func(t: String) -> void: ThemeManager.set_theme_mode(t))
+	theme_tog.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	header.add_child(theme_tog)
 	var title := UIKit.label("New game", "display", 26, "ink")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(title)
 	col.add_child(header)
 
@@ -61,7 +64,7 @@ func _ready() -> void:
 	_diff_block.add_child(UIKit.label("Difficulty", "ui_semibold", 14, "ink_2"))
 	var diff_idx := ["easy", "medium", "hard"].find(difficulty)
 	_diff_seg = Segmented.new().configure(["Easy", "Medium", "Hard"], maxi(diff_idx, 0))
-	_diff_seg.selected.connect(func(i: int) -> void: difficulty = ["easy", "medium", "hard"][i])
+	_diff_seg.selected.connect(_on_difficulty)
 	_diff_block.add_child(_diff_seg)
 	col.add_child(_diff_block)
 	_diff_block.visible = mode == "ai"
@@ -85,13 +88,20 @@ func _ready() -> void:
 	var start := UIKit.button("Start game", "primary", true)
 	start.pressed.connect(_on_start)
 	col.add_child(start)
+	col.add_child(_gap(16))
 
 	_refresh_presets()
 
 
 func _on_mode(i: int) -> void:
 	mode = "ai" if i == 0 else "local"
+	Settings.set_value("mode", mode)
 	_diff_block.visible = mode == "ai"
+
+
+func _on_difficulty(i: int) -> void:
+	difficulty = ["easy", "medium", "hard"][i]
+	Settings.set_value("difficulty", difficulty)
 
 
 func _make_preset(n: int) -> Control:
@@ -119,6 +129,7 @@ func _make_preset(n: int) -> Control:
 
 func _select_size(n: int, from_preset: bool) -> void:
 	board_size = clampi(n, 3, 19)
+	Settings.set_value("board_size", board_size)
 	if from_preset:
 		_stepper.set_value_silent(board_size)
 	_refresh_presets()
@@ -141,9 +152,6 @@ func _refresh_presets() -> void:
 
 
 func _on_start() -> void:
-	Settings.set_value("mode", mode)
-	Settings.set_value("difficulty", difficulty)
-	Settings.set_value("board_size", board_size)
 	MeridianApp.instance.goto("game", {"mode": mode, "difficulty": difficulty, "board_size": board_size})
 
 

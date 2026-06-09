@@ -1,7 +1,14 @@
 class_name GameScreen
 extends Control
-## In-game screen: live scoreboard, turn pill, the board, and undo/restart/menu. Drives the
-## GameState and (in vs-AI) the off-thread AIRunner, then shows the game-over breakdown.
+## In-game screen: live scoreboard, turn pill, the board, undo/restart, a header theme toggle,
+## and a pause menu (with in-game Settings / How-to-Play overlays). Drives the GameState and
+## (in vs-AI) the off-thread AIRunner.
+##
+## Theme changes rebuild the whole screen (see MeridianApp), which would wipe an in-progress
+## game. To survive that, a theme toggle stashes the GameState in the static `_resume` first;
+## the rebuilt screen adopts it instead of starting fresh.
+
+static var _resume: GameState = null
 
 var state: GameState
 var runner: AIRunner
@@ -17,6 +24,10 @@ var o_card: ScoreCard
 var turn_glyph: MarkGlyph
 var turn_label: Label
 var _over_layer: Control
+var _pause_modal: Modal
+var _overlay: Control
+var _think_timer: Timer
+var _think_dots := 0
 
 
 func init_screen(params: Dictionary) -> void:
@@ -25,7 +36,11 @@ func init_screen(params: Dictionary) -> void:
 	difficulty = str(params.get("difficulty", "hard"))
 	board_n = int(params.get("board_size", 9))
 	_build()
-	_start_game()
+	if _resume != null:
+		_adopt(_resume)
+		_resume = null
+	else:
+		_start_game()
 
 
 # ---------------------------------------------------------------- layout
@@ -45,11 +60,14 @@ func _build() -> void:
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 8)
 	var menu_btn := UIKit.button("Menu", "ghost")
-	menu_btn.pressed.connect(func() -> void: MeridianApp.instance.goto("menu"))
+	menu_btn.pressed.connect(_open_pause)
 	top.add_child(menu_btn)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(spacer)
+	var theme_tog := ThemeToggle.new().configure(func(t: String) -> void: _set_theme_preserving(t))
+	theme_tog.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	top.add_child(theme_tog)
 	var undo_btn := UIKit.button("Undo", "soft")
 	undo_btn.pressed.connect(_on_undo)
 	top.add_child(undo_btn)
@@ -106,11 +124,17 @@ func _build() -> void:
 	board_view.cell_pressed.connect(_on_cell_pressed)
 	ar.add_child(board_view)
 
-	# AI runner
+	# AI runner + thinking-dots timer
 	runner = AIRunner.new()
 	add_child(runner)
 	runner.move_ready.connect(_on_ai_move)
 	runner.thinking.connect(_on_ai_thinking)
+
+	_think_timer = Timer.new()
+	_think_timer.wait_time = 0.4
+	_think_timer.one_shot = false
+	_think_timer.timeout.connect(_tick_thinking)
+	add_child(_think_timer)
 
 
 # ---------------------------------------------------------------- game flow
@@ -129,6 +153,23 @@ func _start_game() -> void:
 	_update_scores()
 	_update_turn_pill()
 	_maybe_ai_move()
+
+
+## Re-attach to an in-progress GameState after a theme rebuild (no new game started).
+func _adopt(s: GameState) -> void:
+	state = s
+	state.move_made.connect(_on_move_made)
+	state.game_over.connect(_on_game_over)
+	ai_thinking = false
+	board_view.set_board(state.board)
+	board_view.set_last_move(state.last_move())
+	board_view.interactive = not state.over
+	_update_scores()
+	_update_turn_pill()
+	if state.over:
+		_on_game_over(state.final_result()) # recompute is identical to the original payload
+	else:
+		_maybe_ai_move() # the old runner was freed; re-request if it's the AI's turn
 
 
 func _on_cell_pressed(cell: Vector2i) -> void:
@@ -155,6 +196,8 @@ func _maybe_ai_move() -> void:
 		return
 	ai_thinking = true
 	board_view.interactive = false
+	_think_dots = 0
+	_think_timer.start()
 	_update_turn_pill()
 	runner.request_move(state.board, state.current, _ai_config())
 
@@ -166,6 +209,7 @@ func _on_ai_thinking(cell: Vector2i) -> void:
 
 func _on_ai_move(mv: Vector2i) -> void:
 	ai_thinking = false
+	_think_timer.stop()
 	board_view.set_thinking_cell(Vector2i(-1, -1))
 	board_view.interactive = true
 	if state.over:
@@ -207,6 +251,94 @@ func _on_restart() -> void:
 	_start_game()
 
 
+# ---------------------------------------------------------------- theme (game-preserving)
+
+func _set_theme_preserving(mode: String) -> void:
+	_resume = state
+	ThemeManager.set_theme_mode(mode)
+
+
+func _set_accent_preserving(a: String) -> void:
+	_resume = state
+	ThemeManager.set_accent(a)
+
+
+# ---------------------------------------------------------------- pause + overlays
+
+func _open_pause() -> void:
+	_close_overlays()
+	var m := Modal.new().configure(true, 420.0)
+	add_child(m)
+	_pause_modal = m
+	m.dismissed.connect(_close_pause)
+	m.body.add_child(UIKit.label("Paused", "display_bold", 26, "ink"))
+	m.body.add_child(_pause_btn("Resume", "primary", _close_pause))
+	m.body.add_child(_pause_btn("Restart", "soft", func() -> void:
+		_close_pause()
+		_on_restart()))
+	m.body.add_child(_pause_btn("Settings", "soft", func() -> void:
+		_close_pause()
+		_open_settings_overlay()))
+	m.body.add_child(_pause_btn("How to Play", "soft", func() -> void:
+		_close_pause()
+		_open_howto_overlay()))
+	m.body.add_child(_pause_btn("Back to Main Menu", "ghost", func() -> void:
+		MeridianApp.instance.goto("menu")))
+
+
+
+func _pause_btn(text: String, kind: String, cb: Callable) -> Button:
+	var b := UIKit.button(text, kind)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.pressed.connect(cb)
+	return b
+
+
+func _close_pause() -> void:
+	if is_instance_valid(_pause_modal):
+		_pause_modal.close()
+	_pause_modal = null
+
+
+func _open_settings_overlay() -> void:
+	var m := Modal.new().configure(true, 420.0)
+	add_child(m)
+	_overlay = m
+	m.dismissed.connect(_settings_done)
+	m.body.add_child(UIKit.label("Settings", "display_bold", 24, "ink"))
+	m.body.add_child(SettingsPanel.new().configure(
+		func(mode: String) -> void: _set_theme_preserving(mode),
+		func(a: String) -> void: _set_accent_preserving(a)))
+	var done := UIKit.button("Done", "primary")
+	done.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	done.pressed.connect(_settings_done)
+	m.body.add_child(done)
+
+
+func _settings_done() -> void:
+	_close_overlays()
+	_open_pause()
+
+
+func _open_howto_overlay() -> void:
+	var h := HowToPlay.new()
+	h.on_back = _howto_done
+	h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(h)
+	_overlay = h
+
+
+func _howto_done() -> void:
+	_close_overlays()
+	_open_pause()
+
+
+func _close_overlays() -> void:
+	if is_instance_valid(_overlay):
+		_overlay.queue_free()
+	_overlay = null
+
+
 # ---------------------------------------------------------------- views
 
 func _update_scores() -> void:
@@ -225,11 +357,18 @@ func _update_turn_pill() -> void:
 	turn_glyph.visible = true
 	turn_glyph.set_mark(state.current)
 	if ai_thinking:
-		turn_label.text = "Thinking..."
+		turn_label.text = "Thinking" + ".".repeat(_think_dots)
 	elif vs_ai:
 		turn_label.text = "Your turn" if state.current == Marks.X else "AI is playing"
 	else:
 		turn_label.text = ("X" if state.current == Marks.X else "O") + " to move"
+
+
+func _tick_thinking() -> void:
+	if not ai_thinking:
+		return
+	_think_dots = (_think_dots + 1) % 4
+	turn_label.text = "Thinking" + ".".repeat(_think_dots)
 
 
 # ---------------------------------------------------------------- game over
@@ -263,7 +402,7 @@ func _show_game_over(result: Dictionary) -> void:
 	_over_layer.add_child(center)
 
 	var panel := UIKit.panel("surface", "hairline", 20.0, 28)
-	panel.custom_minimum_size.x = 460
+	panel.custom_minimum_size.x = UIKit.clamp_width(460.0)
 	center.add_child(panel)
 
 	var v := VBoxContainer.new()

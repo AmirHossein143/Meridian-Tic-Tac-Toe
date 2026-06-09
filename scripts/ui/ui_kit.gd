@@ -86,6 +86,17 @@ static func label(text: String, role := "ui", fsize := 16, color_name := "ink") 
 	return l
 
 
+## Clamps a desired panel/column width to the current window so fixed-width layouts never
+## overflow (and clip) on narrow / portrait windows.
+static func clamp_width(desired: float) -> float:
+	var ml := Engine.get_main_loop()
+	if ml is SceneTree and (ml as SceneTree).root != null:
+		var w := (ml as SceneTree).root.get_visible_rect().size.x
+		if w > 0.0:
+			return minf(desired, w - 48.0)
+	return desired
+
+
 static func panel(bg_name := "surface", border_name := "hairline", radius := 20.0, pad := 24) -> PanelContainer:
 	var p := PanelContainer.new()
 	var s := StyleBoxFlat.new()

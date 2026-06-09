@@ -1,6 +1,10 @@
 ; Engine configuration file.
-; Meridian — Godot 4.6 (GDScript). Phase 0 scaffold.
-; Autoloads, main scene, theme and window tuning are added in later phases.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -18,16 +22,14 @@ config/icon="res://assets/branding/icon-final-flat.svg"
 Settings="*res://scripts/ui/settings_store.gd"
 ThemeManager="*res://scripts/ui/theme_manager.gd"
 
+[display]
+
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
-
-[display]
-
-window/size/viewport_width=1152
-window/size/viewport_height=648
-window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
 
 [rendering]
 
