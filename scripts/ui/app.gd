@@ -94,6 +94,14 @@ func _run_smoke() -> void:
 		await gs.runner.move_ready
 	await get_tree().process_frame
 
+	# Fix 3 regression: after the AI replies it's the human's turn — the pill must say so.
+	var turn_ok := gs.state.current == Marks.X and gs.turn_label.text == "Your turn"
+	print("TURN_SYNC: current=%d pill='%s' ok=%s" % [gs.state.current, gs.turn_label.text, str(turn_ok)])
+	if not turn_ok:
+		push_error("turn indicator out of sync with active player")
+		get_tree().quit(1)
+		return
+
 	# REGRESSION: toggle theme mid-game; the board must be preserved across the rebuild.
 	var before_cells := gs.state.board.cells.duplicate()
 	var before_moves := gs.state.history.size()
@@ -106,6 +114,20 @@ func _run_smoke() -> void:
 	print("THEME_PRESERVE: preserved=%s moves=%d->%d" % [str(preserved), before_moves, gs2.state.history.size()])
 	if not preserved:
 		push_error("theme toggle reset the in-progress game")
+		get_tree().quit(1)
+		return
+
+	# Fix 4: toggling theme FROM the in-game Settings overlay must reopen the overlay post-rebuild.
+	gs2._open_settings_overlay()
+	await get_tree().process_frame
+	gs2._settings_set_theme("light" if ThemeManager.is_dark() else "dark")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var gs3 := _current as GameScreen
+	var reopened := is_instance_valid(gs3._overlay) and gs3._overlay is Modal
+	print("SETTINGS_REOPEN: ok=%s" % str(reopened))
+	if not reopened:
+		push_error("settings popup not restored after theme toggle")
 		get_tree().quit(1)
 		return
 	print("SMOKE_OK: menu/settings/howto/credits/setup/game + pause/overlays + theme-preserve")

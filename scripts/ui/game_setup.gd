@@ -112,10 +112,14 @@ func _make_preset(n: int) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 8)
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	# Children must not intercept clicks — the whole card is one hit target (card.gui_input).
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var mini := MiniBoard.new().configure(n, 64)
 	mini.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	mini.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var lbl := UIKit.label("%d x %d" % [n, n], "ui_semibold", 14, "ink")
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(mini)
 	v.add_child(lbl)
 	card.add_child(v)

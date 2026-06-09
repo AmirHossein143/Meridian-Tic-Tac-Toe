@@ -52,6 +52,18 @@ static func score(board: Board) -> Dictionary:
 	return out
 
 
+## Points each run-length bucket contributes, derived from one player's score() record
+## (single source of truth). rec = { "total", "runs":[{cells,len}], "counts":{3,4,5} }.
+## Returns { 3: c3*3, 4: c4*4, 5: sum of len for runs of len >= 5 }. A run of L always adds L,
+## so the 5+ bucket sums actual lengths (a len-6 run = 6, not 5) and the three buckets sum to total.
+static func bucket_points(rec: Dictionary) -> Dictionary:
+	var p := {3: 0, 4: 0, 5: 0}
+	for run: Dictionary in rec["runs"]:
+		var length: int = run["len"]
+		p[mini(length, 5)] += length
+	return p
+
+
 ## Convenience: { Marks.X: total, Marks.O: total }.
 static func totals(board: Board) -> Dictionary:
 	var s := score(board)

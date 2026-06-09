@@ -9,6 +9,7 @@ extends Control
 ## the rebuilt screen adopts it instead of starting fresh.
 
 static var _resume: GameState = null
+static var _resume_overlay := "" ## "settings" if the in-game Settings popup was open across a theme rebuild
 
 var state: GameState
 var runner: AIRunner
@@ -36,9 +37,14 @@ func init_screen(params: Dictionary) -> void:
 	difficulty = str(params.get("difficulty", "hard"))
 	board_n = int(params.get("board_size", 9))
 	_build()
-	if _resume != null:
-		_adopt(_resume)
-		_resume = null
+	var resume := _resume
+	var overlay := _resume_overlay
+	_resume = null
+	_resume_overlay = ""
+	if resume != null:
+		_adopt(resume)
+		if overlay == "settings":
+			_open_settings_overlay() # restore the in-game Settings popup after a theme rebuild
 	else:
 		_start_game()
 
@@ -145,6 +151,7 @@ func _start_game() -> void:
 		_over_layer = null
 	state = GameState.new(board_n, GameState.Mode.VS_AI if vs_ai else GameState.Mode.TWO_PLAYER)
 	state.move_made.connect(_on_move_made)
+	state.turn_changed.connect(_on_turn_changed)
 	state.game_over.connect(_on_game_over)
 	ai_thinking = false
 	board_view.set_board(state.board)
@@ -159,6 +166,7 @@ func _start_game() -> void:
 func _adopt(s: GameState) -> void:
 	state = s
 	state.move_made.connect(_on_move_made)
+	state.turn_changed.connect(_on_turn_changed)
 	state.game_over.connect(_on_game_over)
 	ai_thinking = false
 	board_view.set_board(state.board)
@@ -183,10 +191,15 @@ func _on_cell_pressed(cell: Vector2i) -> void:
 func _on_move_made(r: int, c: int, _player: int) -> void:
 	board_view.set_last_move(Vector2i(r, c))
 	board_view.queue_redraw()
-	_update_scores()
-	_update_turn_pill()
+	# Indicators refresh on turn_changed / game_over (emitted right after move_made), so they
+	# always reflect the post-flip side to move — not the player who just moved.
 	if not state.over:
 		call_deferred("_maybe_ai_move")
+
+
+func _on_turn_changed(_player: int) -> void:
+	_update_scores()
+	_update_turn_pill()
 
 
 func _maybe_ai_move() -> void:
@@ -263,6 +276,17 @@ func _set_accent_preserving(a: String) -> void:
 	ThemeManager.set_accent(a)
 
 
+# Settings-overlay variants: also remember to reopen the popup after the rebuild.
+func _settings_set_theme(mode: String) -> void:
+	_resume_overlay = "settings"
+	_set_theme_preserving(mode)
+
+
+func _settings_set_accent(a: String) -> void:
+	_resume_overlay = "settings"
+	_set_accent_preserving(a)
+
+
 # ---------------------------------------------------------------- pause + overlays
 
 func _open_pause() -> void:
@@ -306,9 +330,7 @@ func _open_settings_overlay() -> void:
 	_overlay = m
 	m.dismissed.connect(_settings_done)
 	m.body.add_child(UIKit.label("Settings", "display_bold", 24, "ink"))
-	m.body.add_child(SettingsPanel.new().configure(
-		func(mode: String) -> void: _set_theme_preserving(mode),
-		func(a: String) -> void: _set_accent_preserving(a)))
+	m.body.add_child(SettingsPanel.new().configure(_settings_set_theme, _settings_set_accent))
 	var done := UIKit.button("Done", "primary")
 	done.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	done.pressed.connect(_settings_done)
@@ -355,12 +377,16 @@ func _update_turn_pill() -> void:
 		turn_label.text = "Game over"
 		return
 	turn_glyph.visible = true
-	turn_glyph.set_mark(state.current)
-	if ai_thinking:
-		turn_label.text = "Thinking" + ".".repeat(_think_dots)
-	elif vs_ai:
-		turn_label.text = "Your turn" if state.current == Marks.X else "AI is playing"
+	# Set glyph AND text explicitly per state so the pill always matches the side to move.
+	if vs_ai:
+		if state.current == Marks.X:
+			turn_glyph.set_mark(Marks.X)
+			turn_label.text = "Your turn"
+		else:
+			turn_glyph.set_mark(Marks.O)
+			turn_label.text = "AI is playing" + (".".repeat(_think_dots) if ai_thinking else "")
 	else:
+		turn_glyph.set_mark(state.current)
 		turn_label.text = ("X" if state.current == Marks.X else "O") + " to move"
 
 
@@ -368,7 +394,7 @@ func _tick_thinking() -> void:
 	if not ai_thinking:
 		return
 	_think_dots = (_think_dots + 1) % 4
-	turn_label.text = "Thinking" + ".".repeat(_think_dots)
+	_update_turn_pill()
 
 
 # ---------------------------------------------------------------- game over
@@ -456,18 +482,19 @@ func _breakdown_col(owner: int, rec: Dictionary, is_winner: bool, name_text: Str
 	col.add_child(head)
 
 	col.add_child(UIKit.label(str(rec["total"]), "display_bold", 30, "ink"))
-	col.add_child(_bd_row("3-lines", rec["counts"][3]))
-	col.add_child(_bd_row("4-lines", rec["counts"][4]))
-	col.add_child(_bd_row("5+ lines", rec["counts"][5]))
+	var pts := Scoring.bucket_points(rec)
+	col.add_child(_bd_row("3-lines", rec["counts"][3], pts[3]))
+	col.add_child(_bd_row("4-lines", rec["counts"][4], pts[4]))
+	col.add_child(_bd_row("5+ lines", rec["counts"][5], pts[5]))
 	return col
 
 
-func _bd_row(text: String, count: int) -> Control:
+func _bd_row(text: String, count: int, points: int) -> Control:
 	var row := HBoxContainer.new()
 	var l := UIKit.label(text, "ui", 14, "ink_2")
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(l)
-	row.add_child(UIKit.label("x %d" % count, "mono", 14, "ink"))
+	row.add_child(UIKit.label("x %d  ·  %d pts" % [count, points], "mono", 14, "ink"))
 	return row
 
 
