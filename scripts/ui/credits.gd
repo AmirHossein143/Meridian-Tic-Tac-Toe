@@ -3,9 +3,9 @@ extends Control
 ## Credits + links. URLs are intentionally blank named constants for the author to fill in;
 ## a row whose URL is still blank is disabled so it never opens an empty link.
 
-const GITHUB_URL := ""    # TODO: Amir to fill
-const LINKEDIN_URL := ""  # TODO: Amir to fill
-const PORTFOLIO_URL := "" # TODO: Amir to fill
+const GITHUB_URL := "https://github.com/AmirHossein143"
+const LINKEDIN_URL := "https://www.linkedin.com/in/amirhossein-poudratchi-66a86b266/"
+const PORTFOLIO_URL := "https://www.example.com"
 
 
 func _ready() -> void:
