@@ -7,7 +7,7 @@
 ![Godot](https://img.shields.io/badge/Godot-4.6-478CBF?style=flat-square&logo=godot-engine&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-![Status](https://img.shields.io/badge/status-launch--ready-brightgreen?style=flat-square)
+![Status](https://img.shields.io/badge/status-In%20Development-yellow?style=flat-square)
 
 **🌐 زبان:** [English](README.md) · **فارسی**
 
