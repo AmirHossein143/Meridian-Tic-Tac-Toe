@@ -1,4 +1,4 @@
-# Meridian
+# 🎯 Meridian
 
 A polished, modern tic-tac-toe game built in **Godot 4** with **GDScript**. Play on a customizable board (3×3 to 19×19), compete against an intelligent AI, or challenge a friend locally.
 
@@ -7,17 +7,19 @@ A polished, modern tic-tac-toe game built in **Godot 4** with **GDScript**. Play
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![Status](https://img.shields.io/badge/status-launch--ready-brightgreen?style=flat-square)
 
+**🌐 Language:** **English** · [فارسی](README.fa.md)
+
 ---
 
-## What makes it different
+## ✨ What makes it different
 
 Meridian isn't win-on-3 tic-tac-toe. The board **always fills completely** — there's no early win. Once every cell is placed, the board is scored: each player earns points for every straight run of 3 or more of their own mark, and the highest total wins.
 
-That one rule change turns a solved children's game into something with actual depth — every move matters until the very last cell, and a "losing" position can still turn into a comeback on the final tally.
+That one rule change turns a solved children's game into something with actual depth — every move matters until the very last cell, and a "losing" position can still turn into a comeback on the final tally. 🔥
 
 ---
 
-## Screenshots
+## 📸 Screenshots
 
 | Main Menu | New Game Setup |
 |:---:|:---:|
@@ -29,27 +31,27 @@ That one rule change turns a solved children's game into something with actual d
 
 ---
 
-## Gameplay
+## 🕹️ Gameplay
 
 - **Fill the entire board** — no early wins; the game ends only when every cell is occupied.
 - **Score maximal runs** — after the board fills, every straight line of 3+ identical marks (horizontal, vertical, or either diagonal) scores points for its owner.
 - **Scoring formula** — a run of length *L* is worth *L* points (a 3-line scores 3, a 5-line scores 5, and so on). Highest total wins; equal totals draw.
 - **Two modes**:
-  - **vs AI** — Easy / Medium / Hard difficulty
-  - **2 Players** — local pass-and-play on one device
+  - 🤖 **vs AI** — Easy / Medium / Hard difficulty
+  - 👥 **2 Players** — local pass-and-play on one device
 - **Any board size** — pick a preset (3×3, 5×5, 9×9, 13×13, 15×15, 19×19) or dial in a custom size with the stepper.
 
-## Features
+## 🚀 Features
 
 - **Non-blocking AI** — negamax search with alpha-beta pruning runs on a worker thread with a per-move time budget, so the UI never freezes; a "thinking" pulse shows on the AI's target cell.
-- **Light & dark themes**, with an optional purple accent — togglable anywhere, including mid-game, without losing your board state.
-- **Full audio** — SFX for placement, UI interactions, win/draw/game-over, plus looping in-game music; independently toggle sound and music.
+- 🌗 **Light & dark themes**, with an optional purple accent — togglable anywhere, including mid-game, without losing your board state.
+- 🔊 **Full audio** — SFX for placement, UI interactions, win/draw/game-over, plus looping in-game music; independently toggle sound and music.
 - **Undo & Restart**, animated mark placement, score count-up, and run-band highlights over the winning lines at game end.
-- **Persistent settings** — last mode, difficulty, board size, theme, and audio preferences are all saved to `user://`.
+- 💾 **Persistent settings** — last mode, difficulty, board size, theme, and audio preferences are all saved to `user://`.
 - **Built-in "How to Play" guide** with real board illustrations and a worked scoring example.
 - **Responsive layout** — square, centered board; scales for desktop windows today, with mobile/portrait support planned.
 
-## Scoring, by example
+## 🧮 Scoring, by example
 
 After the board fills, every **maximal** run of 3+ identical marks scores for its owner — a run is "maximal" if the cell just before it (in that direction) is empty or belongs to the other player.
 
@@ -59,7 +61,7 @@ After the board fills, every **maximal** run of 3+ identical marks scores for it
 
 Sum every maximal run across all 4 directions for both players; the higher total wins, equal totals draw.
 
-## AI difficulty
+## 🧠 AI difficulty
 
 The AI uses **negamax search with alpha-beta pruning**, move ordering, and transposition tables:
 
@@ -73,7 +75,7 @@ Search always runs off the main thread, regardless of difficulty or board size.
 
 ---
 
-## Project structure
+## 📁 Project structure
 
 ```
 Meridian-Tic-Tac-Toe/
@@ -97,7 +99,7 @@ Meridian-Tic-Tac-Toe/
 
 ---
 
-## Getting started
+## ⚙️ Getting started
 
 ### Prerequisites
 
@@ -132,21 +134,25 @@ godot --headless --export-release "Windows Desktop" build/Meridian.exe
 
 ---
 
-## Built with
+## 🛠️ Built with
 
 - **Godot 4.6** / **GDScript**
 - **GdUnit4** for unit testing
 - **Sora**, **Hanken Grotesk**, **JetBrains Mono** (Google Fonts)
 
-## Platform support
+## 📱 Platform support
 
-- **Windows** — primary target, export-ready
-- **Android** — planned; touch input and mobile rendering settings already verified
+- 🪟 **Windows** — primary target, export-ready
+- 🤖 **Android** — planned; touch input and mobile rendering settings already verified
 
-## License
+## 📄 License
 
 MIT — see [LICENSE](./LICENSE).
 
-## Author
+## 👤 Author
 
 **AmirHossein** — [GitHub](https://github.com/AmirHossein143)
+
+---
+
+**🌐 Language:** **English** · [فارسی](README.fa.md)
